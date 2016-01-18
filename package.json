@@ -1,0 +1,22 @@
+{
+  "name": "hal9000-alarm",
+  "version": "1.0.0",
+  "description": "Hal9000 alarm module",
+  "main": "hal9000-alarm",
+  "private": true,
+  "dependencies": {
+    "co-express": "^1.2.1",
+    "johnny-five": "^0.9.14",
+    "mongoose": "^4.3.0",
+    "mqtt": "^1.6.1",
+    "serialport": "^2.0.5",
+    "sms-freemobile-api": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node ./hal9000-alarm",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nicolas Dywicki <nicolas.dywicki@gmail.com>",
+  "license": "ISC"
+}
