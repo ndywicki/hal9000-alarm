@@ -36,11 +36,10 @@ fs.readdirSync(models)
   .filter(file => ~file.indexOf('.js'))
   .forEach(file => require(join(models, file)));
 
-//The server IP
-const SERVER_IP = '192.168.1.47';
-
+//Mongo URL server
+const MONGO_URL = process.env.MONGO_URL || 'mongodb://192.168.1.45/hal9000';
 // Mongo connection
-mongoose.connect('mongodb://'+SERVER_IP+'/hal9000');
+mongoose.connect(MONGO_URL);
 
 const Alarm = mongoose.model('Alarm');
 
@@ -151,7 +150,7 @@ board.on("ready", function() {
 	//MQTT incoming command
 	client.on('message', function(topic, message) {
 		console.log('mqtt received topic:'+topic + ' message:'+ message);
-		var command;
+		let command;
 		try {
  			command = JSON.parse(message);
 		} catch (exception) {
@@ -193,7 +192,6 @@ board.on("ready", function() {
 		pin: 8,
 	});
 
-	var inputs = [];
 	//init input sensors
 	sensors.forEach(function(sensor, index, array) {
 		console.log("sensor[" + index + "] = " + sensor.id);
@@ -201,14 +199,13 @@ board.on("ready", function() {
 		expander.pullUp(sensor.pin, this.io.HIGH);
 	}, this);
 	//Create input buttons and attach the events functions
-	for (var pin = 0; pin < sensors.length; pin++) {
-		var input = new five.Button({
+	for (let pin = 0; pin < sensors.length; pin++) {
+		let input = new five.Button({
 			pin: pin,
 			board: virtual
 		});
 
 		input.on("press", (sensorHit)(pin));
 		input.on("release", (sensorOff)(pin));
-	};
-
+	}
 });

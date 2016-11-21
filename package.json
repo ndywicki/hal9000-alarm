@@ -6,10 +6,9 @@
   "private": true,
   "dependencies": {
     "co-express": "^1.2.1",
-    "johnny-five": "^0.9.14",
+    "johnny-five": "^0.10.5",
     "mongoose": "^4.3.0",
     "mqtt": "^1.6.1",
-    "serialport": "^2.0.5",
     "sms-freemobile-api": "^1.0.0"
   },
   "devDependencies": {},
