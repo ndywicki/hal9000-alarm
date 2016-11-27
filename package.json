@@ -9,6 +9,7 @@
     "johnny-five": "^0.10.5",
     "mongoose": "^4.3.0",
     "mqtt": "^1.6.1",
+    "process": "^0.11.9",
     "sms-freemobile-api": "^1.0.0"
   },
   "devDependencies": {},

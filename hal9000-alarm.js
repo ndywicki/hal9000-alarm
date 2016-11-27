@@ -2,15 +2,14 @@
 
 /*!
  * Hal9000 alarm module
- * Copyright(c) 2016 Nicolas Dyiwkci <nicolas.dywicki@gmail.com>
+ * Copyright(c) 2016 Nicolas Dywicki <nicolas.dywicki@gmail.com>
  * GNU LESSER GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
  */
 
 /**
- * Module dependencies
+ * Module dependencies.
  */
-
 const fs = require('fs');
 const join = require('path').join;
 const mqtt = require('mqtt');
@@ -71,9 +70,9 @@ const sensors = [
 ];
 
 //Init alarm status
-var alarmMode = AlarmModeEnum.full;
-var alarmStatus = AlarmStatusEnum.off;
-var alarmTempo = 0;
+let alarmMode = AlarmModeEnum.full;
+let alarmStatus = AlarmStatusEnum.off;
+let alarmTempo = 0;
 
 Alarm.count({}, function(err, count) {
     if(count === 0) {
@@ -97,54 +96,55 @@ Alarm.count({}, function(err, count) {
 
 
 //MQTT connection
-var client = mqtt.connect(MQTT_URL);
+const client = mqtt.connect(MQTT_URL);
 client.on('connect', function() {
 	client.subscribe('alarm/commands');
 	console.log("MQTT connected");
 });
 // MQTT topics
-var sensorTopic = 'alarm/sensors/';
-var eventsTopic = 'alarm/events';
+const sensorTopic = 'alarm/sensors/';
+const eventsTopic = 'alarm/events';
 
-var led;
-var alarmTimeout;
-var sensorHit = function(pin) {
-	return function() {
-		var sensor = sensors[pin];
-		sensor['value'] = 1;
-		console.log("sensor hit=" + sensor.id + " " + sensor.label);
-		var topic = sensorTopic + sensor.id;
-		client.publish(topic, JSON.stringify(sensor));
-		client.publish(eventsTopic, 'Capteur '+ sensor.label+' hit');
+let led;
+let ledStatus;
+let alarmTimeout;
+const sensorHit = function (pin) {
+    return function () {
+        const sensor = sensors[pin];
+        sensor['value'] = 1;
+        console.log("sensor hit=" + sensor.id + " " + sensor.label);
+        const topic = sensorTopic + sensor.id;
+        client.publish(topic, JSON.stringify(sensor));
+        client.publish(eventsTopic, 'Capteur ' + sensor.label + ' hit');
 
-		console.log("alarm status:"+alarmStatus+" mode:"+alarmMode+" tempo:"+alarmTempo);
-		if(alarmStatus === AlarmStatusEnum.armed) {
-			if(alarmMode === AlarmModeEnum.perimetric
-				&& sensor.type !== SensorTypeEnum.sensorMagnet) {
-				console.log('alarm armed on perimetric mode, no action');
-				return;
-			}
-			console.log('!!Siren on!!');
-			//siren on
-			alarmTimeout = setTimeout(function() {
-				alarmStatus = AlarmStatusEnum.siren;
-				led.on();
-				Alarm.updateAlarm(alarmStatus, alarmMode, alarmTempo);
-				client.publish(eventsTopic, '!!Siren on!!');
-				sms.sent('Alarm%20intrusion!');
-			}, alarmTempo*1000);
-		}
-	}
+        console.log("alarm status:" + alarmStatus + " mode:" + alarmMode + " tempo:" + alarmTempo);
+        if (alarmStatus === AlarmStatusEnum.armed) {
+            if (alarmMode === AlarmModeEnum.perimetric
+                && sensor.type !== SensorTypeEnum.sensorMagnet) {
+                console.log('alarm armed on perimetric mode, no action');
+                return;
+            }
+            console.log('!!Siren on!!');
+            //siren on
+            alarmTimeout = setTimeout(function () {
+                alarmStatus = AlarmStatusEnum.siren;
+                led.on();
+                Alarm.updateAlarm(alarmStatus, alarmMode, alarmTempo);
+                client.publish(eventsTopic, '!!Siren on!!');
+                sms.sent('Alarm%20intrusion!');
+            }, alarmTempo * 1000);
+        }
+    }
 };
-var sensorOff = function(pin) {
-	return function() {
-		//clearTimeout(alarmTimeout);
-		var sensor = sensors[pin];
-		sensor['value'] = 0;
-		console.log("sensor off=" + sensor.id + " " + sensor.label);
-		var topic = sensorTopic + sensor.id;
-		client.publish(topic, JSON.stringify(sensor));
-	}
+const sensorOff = function (pin) {
+    return function () {
+        //clearTimeout(alarmTimeout);
+        const sensor = sensors[pin];
+        sensor['value'] = 0;
+        console.log("sensor off=" + sensor.id + " " + sensor.label);
+        const topic = sensorTopic + sensor.id;
+        client.publish(topic, JSON.stringify(sensor));
+    }
 };
 
 
@@ -170,17 +170,20 @@ board.on("ready", function() {
 			}
 			if(AlarmModeEnum[command.mode]) {
 				console.log('mode:'+command.mode);
-				alarmMode = command.mode
+				alarmMode = command.mode;
 				client.publish(eventsTopic, 'Commande mode ' + alarmMode);
 			}
 			if(AlarmStatusEnum[command.status]) {
 				console.log('alarm:'+command.status);
-				alarmStatus = command.status
+				alarmStatus = command.status;
 				client.publish(eventsTopic, 'Commande alarme ' + alarmStatus);
 				if(alarmStatus === AlarmStatusEnum.off) {
+                    ledStatus.off();
 					//shutdown siren
 					led.off();
-				}
+				} else {
+                    ledStatus.on();
+                }
 			}
 
 			console.log("New alarm status:"+alarmStatus+" mode:"+alarmMode+" tempo:"+alarmTempo);
@@ -188,13 +191,14 @@ board.on("ready", function() {
 		}
 	});
 
-	var expander = new five.Expander("MCP23017")
-	var virtual = new five.Board.Virtual(expander);
+	const expander = new five.Expander("MCP23017");
+	const virtual = new five.Board.Virtual(expander);
 
 	led = new five.Led({
 		board: virtual,
 		pin: 8,
 	});
+    ledStatus = new five.Led(13);
 
 	//init input sensors
 	sensors.forEach(function(sensor, index, array) {
