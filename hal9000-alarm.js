@@ -23,6 +23,12 @@ const sms = new Sms({
 	user: process.env.SMS_USER,
 	pass: process.env.SMS_PWD
 });
+
+//Mongo URL server
+const MONGO_URL = process.env.MONGO_URL || 'mongodb://192.168.1.45/hal9000';
+//MQTT URL server
+const MQTT_URL = process.env.MQTT_URL || 'mqtt://192.168.1.45:16883';
+
 //instantiate johnny-five
 const board = new five.Board({
 	repl: false
@@ -36,8 +42,6 @@ fs.readdirSync(models)
   .filter(file => ~file.indexOf('.js'))
   .forEach(file => require(join(models, file)));
 
-//Mongo URL server
-const MONGO_URL = process.env.MONGO_URL || 'mongodb://192.168.1.45/hal9000';
 // Mongo connection
 mongoose.connect(MONGO_URL);
 
@@ -93,7 +97,7 @@ Alarm.count({}, function(err, count) {
 
 
 //MQTT connection
-var client = mqtt.connect('mqtt://'+SERVER_IP);
+var client = mqtt.connect(MQTT_URL);
 client.on('connect', function() {
 	client.subscribe('alarm/commands');
 	console.log("MQTT connected");
